@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>StreamLayer-Static Geometry Use Case-test</title>
+    <title>StreamLayer-Static Geometry Use Case</title>
     <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
     <style type="text/css">
       html, body {
@@ -12,15 +12,23 @@
         width: 100%;
         margin: 0;
         padding: 0;
-        overflow:hidden;
+        overflow: hidden;
       }
 
-      .disconnected {
-        background-color: #800010;
+      .banner {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        color: #000080;
+        font-size: 2em;
+        font-weight: bold;
       }
 
       .connected {
         background-color: #008000;
+      }
+
+      .disconnected {
+        background-color: #800010;
       }
 
       #mapDiv {
@@ -36,6 +44,9 @@
     <script src="https://js.arcgis.com/3.16/"></script>
   </head>
   <body>
+    <div class="banner">
+      Stream Layer: Static Observation Points with Updating Attributes
+    </div>
     <div id="mapDiv"></div>
     <div>
       <span>Stream service url: </span><input type="text" id="txtWsUrl" class="disconnected" /><br>
@@ -48,6 +59,7 @@
     require([
         "esri/map",
         "esri/layers/StreamLayer",
+        "esri/InfoTemplate",
 
         "dojo/dom",
         "dojo/dom-class",
@@ -55,7 +67,7 @@
 
         "dojo/domReady!"
       ], function(
-          Map, StreamLayer,
+          Map, StreamLayer, InfoTemplate,
           dom, domClass, on){
 
         var url = "http://ec2-75-101-155-202.compute-1.amazonaws.com:6080/arcgis/rest/services/GageStatusRenderer/StreamServer";
@@ -68,7 +80,7 @@
         map = new Map("mapDiv", {
           basemap: "topo",
           center: [-84.397, 33.766],
-          zoom: 6
+          zoom: 8
         });
 
         function toggleStreamLayer(){
@@ -85,7 +97,8 @@
 
           streamLayer = new StreamLayer(url, {
             purgeOptions: { displayCount: 10000 },
-            outFields: ["*"]
+            outFields: ["*"],
+            infoTemplate: new InfoTemplate("Attributes", "${*}")
           });
           map.addLayer(streamLayer);
 
