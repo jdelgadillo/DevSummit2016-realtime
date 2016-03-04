@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Stream Layer 4-3D</title>
+    <link rel="stylesheet" href="https://jsdev.arcgis.com/4.0/esri/css/main.css"/>
+    <style type="text/css">
+      html, body {
+        height: 100%; width: 100%;
+        margin: 0; padding: 0;
+        overflow:hidden;
+      }
+
+      .banner {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        color: #000080;
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      .disconnected{
+        background-color: #800010;
+      }
+
+      .connected{
+        background-color: #008000;
+      }
+
+      #mapDiv{
+        height: 85%;
+        width: 100%;
+      }
+
+      #txtUrl{
+        width: 700px;
+        color: #ffffff;
+      }
+    </style>
+
+    <script src="https://js.arcgis.com/4.0beta3/"></script>
+
+    <script>
+      var layerView;
+      require([
+          "esri/Map",
+          "esri/views/SceneView",
+
+          "esri/layers/StreamLayer",
+
+          "esri/PopupTemplate",
+
+          "esri/renderers/SimpleRenderer",
+          "esri/symbols/PointSymbol3D",
+          "esri/symbols/IconSymbol3DLayer",
+
+          "dojo/on",
+          "dojo/dom",
+          "dojo/dom-class",
+          "dojo/domReady!"
+      ], function(Map, SceneView,
+                  StreamLayer,
+                  PopupTemplate,
+                  SimpleRenderer, PointSymbol3D, IconSymbol3DLayer,
+                  on, dom, domClass){
+
+        var slayer,
+            controller;
+
+        dom.byId("txtUrl").value = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/WorldSatellites/StreamServer";
+
+        var map = new Map({
+          basemap: "satellite"
+        });
+
+        var sceneView = new SceneView({
+          container: "mapDiv",
+          map: map
+        });
+
+        on(dom.byId("cmdConnect"), "click", connect);
+        on(dom.byId("cmdRemove"), "click", removeLayer);
+
+        function connect(){
+          if(slayer){
+            console.log("layer exists. just reconnecting");
+            slayer.connect();
+            return;
+          }
+
+          //Create the PopupTemplate
+          var template = new PopupTemplate({
+            title: "Name: {SatelliteName}",
+            content: "Altitude: {AltitudeMeters}<br>Inclination: {Inclination}",
+            fieldInfos: [{
+              fieldName: "AltitudeMeters",
+              format: {
+                digitSeparator: true,
+                places: 0
+              }
+            },
+            {
+              fieldName: "Inclination",
+              format: {
+                digitSeparator: true,
+                places: 2
+              }
+            }]});
+
+          // Create iconSymbol and add to renderer
+          var iconSymbol = new PointSymbol3D({
+            symbolLayers: [new IconSymbol3DLayer({
+              size: 14,
+              resource: {
+                primitive: "square"
+              },
+              material: {
+                color: "orange"
+              }
+            })]
+          });
+
+          var objectSymbolRenderer = new SimpleRenderer({
+            symbol: iconSymbol
+          });
+
+          slayer = new StreamLayer({
+            url: dom.byId("txtUrl").value,
+            popupTemplate: template,
+            purgeOptions: {
+              displayCount: 10000
+            },
+            renderer: objectSymbolRenderer
+          });
+
+          slayer.then(null, function(err){
+            console.log("layer error: ", err);
+          });
+
+          // Get controller when it is created.
+          //  Controller emits connect/disconnect events
+          slayer.on("graphics-controller-create", function(evt){
+            controller = evt.graphicsController;
+            controller.on("connect", function(){
+              domClass.replace("txtUrl", "connected", "disconnected");
+              dom.byId("cmdConnect").disabled = true;
+              dom.byId("cmdRemove").disabled = false;
+            });
+            controller.on("disconnect", function(evt){
+              domClass.replace("txtUrl", "disconnected", "connected");
+              dom.byId("cmdConnect").disabled = false;
+              dom.byId("cmdRemove").disabled = true;
+            });
+          });
+
+          map.add(slayer);
+        }
+
+        function disconnect(){
+          if(controller) {
+            controller.disconnect();
+          }
+        }
+
+        function removeLayer(){
+          if(controller){
+            controller.disconnect();
+            map.remove(slayer);
+            slayer = null;
+            controller = null;
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="banner">
+      Stream Layer 4.0 In SceneView
+    </div>
+    <div id="mapDiv"></div>
+    <div>
+      <input type="text" id="txtUrl" class="disconnected">
+    </div>
+    <div>
+      <input type="button" id="cmdConnect" value="Add Layer">
+      <input type="button" id="cmdRemove" value="Remove Layer" disabled="disabled">
+    </div>
+  </body>
+</html>
