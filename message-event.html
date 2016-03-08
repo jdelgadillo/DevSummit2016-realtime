@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+  <title>StreamLayer-Message Event</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+  <style type="text/css">
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .banner {
+      margin-top: 5px;
+      margin-bottom: 5px;
+      color: #000080;
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .bordered{
+      border-color: #dcdcdc;
+      border-style: solid;
+      border-width: thin;
+      padding: 10px;
+    }
+
+    .connected {
+      background-color: #008000;
+    }
+
+    .control{
+      float: left;
+      width: 25%;
+      height:15px;
+      text-align: center;
+      text-wrap: normal;
+    }
+
+    .disconnected {
+      background-color: #800010;
+    }
+
+    .padded {
+      margin-left: 10px;
+      padding-top: 10px;
+    }
+
+    #mapDiv {
+      width: 100%;
+      height: 60%;
+    }
+
+    #txtWsUrl {
+      width: 700px;
+      color: #ffffff;
+    }
+  </style>
+  <script src="https://js.arcgis.com/3.16/"></script>
+</head>
+<body>
+<div class="banner">
+  Stream Layer: Message Event
+</div>
+<div id="mapDiv"></div>
+<div>
+  <span>Stream service url: </span><input type="text" id="txtWsUrl" class="disconnected" /><br>
+      <span>
+        <input type="button" id="cmdToggleStream" value="Start Stream" />
+      </span>
+</div>
+<div class="padded" id="divFilterControls" style="position: relative;">
+  <div class="control bordered">
+    <span>Less than 18000 feet: </span>
+    <span id="lt18000"></span>
+  </div>
+  <div class="control bordered">
+    <span>Greater than 18000 feet: </span>
+    <span id="gt18000"></span>
+  </div>
+</div>
+
+</body>
+<script>
+  require([
+    "esri/map",
+    "esri/layers/StreamLayer",
+    "esri/InfoTemplate",
+
+    "dojo/dom",
+    "dojo/dom-class",
+    "dojo/on",
+
+    "dojo/domReady!"
+  ], function(
+      Map, StreamLayer, InfoTemplate,
+      dom, domClass, on){
+
+    var url = "http://ec2-75-101-155-202.compute-1.amazonaws.com:6080/arcgis/rest/services/AsdiTracks/StreamServer";
+    var map,
+        streamLayer,
+        flights = {},
+        gtCnt = 0,
+        ltCnt = 0,
+        intervalTimer;
+
+    dom.byId("txtWsUrl").value = url;
+    on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
+
+    updateCounts();
+
+    map = new Map("mapDiv", {
+      basemap: "topo",
+      center: [-90, 40],
+      zoom: 3
+    });
+
+    function toggleStreamLayer(){
+      if (streamLayer){
+        disconnectStreamLayer();
+      }
+      else{
+        connectStreamLayer();
+      }
+    }
+
+    function connectStreamLayer(){
+      var url = dom.byId("txtWsUrl").value;
+
+      streamLayer = new StreamLayer(url, {
+        purgeOptions: { displayCount: 10000 },
+        outFields: ["*"],
+        infoTemplate: new InfoTemplate("Attributes", "${*}")
+      });
+      map.addLayer(streamLayer);
+
+      streamLayer.on("connect", function(){
+        dom.byId("cmdToggleStream").value = "Stop Stream";
+        domClass.replace("txtWsUrl", "connected", "disconnected");
+      });
+
+      streamLayer.on("disconnect", function(){
+        dom.byId("cmdToggleStream").value = "Start Stream";
+        domClass.replace("txtWsUrl", "disconnected", "connected");
+      });
+
+      streamLayer.on("error", function(err){
+        console.log("error: ", err);
+      });
+
+      streamLayer.on("message", function(evt){
+        var id = evt.attributes.FltId,
+            alt = evt.attributes.AltitudeFeet,
+            oldalt = flights.hasOwnProperty(id) ? flights[id] : -1;
+        if(oldalt < 0) {
+          flights[id] = alt;
+        }
+        else {
+          oldalt < 18000 ? ltCnt-- : gtCnt--;
+        }
+
+        if (alt > 18000) {
+          gtCnt++;
+        }
+        else{
+          ltCnt++
+        }
+      });
+
+      intervalTimer = setInterval(updateCounts, 1000);
+    }
+
+    function disconnectStreamLayer(){
+      if (streamLayer){
+        map.removeLayer(streamLayer);
+        streamLayer = null;
+        clearInterval(intervalTimer);
+        gtCnt = 0;
+        ltCnt = 0;
+        updateCounts();
+      }
+    }
+
+    function updateCounts(){
+      dom.byId("gt18000").innerHTML = gtCnt;
+      dom.byId("lt18000").innerHTML = ltCnt;
+    }
+  });
+</script>
+</html>
