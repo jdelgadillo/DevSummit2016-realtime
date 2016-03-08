@@ -49,7 +49,7 @@
 
     #mapDiv {
       width: 100%;
-      height: 70%;
+      height: 65%;
     }
 
     #txtWhere {
@@ -79,7 +79,7 @@
     </div>
     <div class="control bordered">
       <span>Enter Where Clause</span><br>
-      <input type="text" id="txtWhere" value="Inclination < 40">
+      <input type="text" id="txtWhere" value="AltitudeFeet < 30000">
       <input type="button" id="cmdToggleWhereFilter" value="Apply Where" disabled="disabled" /><br>
     </div>
   </div>
@@ -114,7 +114,7 @@
 
     var streamLayer;
 
-    var url = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/WorldSatellites/StreamServer";
+    var url = "http://ec2-75-101-155-202.compute-1.amazonaws.com:6080/arcgis/rest/services/AsdiTracks/StreamServer";
 
     var map = new Map("mapDiv", {
       basemap: "gray",

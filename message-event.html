@@ -29,20 +29,12 @@
       padding: 10px;
     }
 
-    .connected {
-      background-color: #008000;
-    }
-
     .control{
       float: left;
       width: 25%;
       height:15px;
       text-align: center;
       text-wrap: normal;
-    }
-
-    .disconnected {
-      background-color: #800010;
     }
 
     .padded {
@@ -52,12 +44,7 @@
 
     #mapDiv {
       width: 100%;
-      height: 60%;
-    }
-
-    #txtWsUrl {
-      width: 700px;
-      color: #ffffff;
+      height: 70%;
     }
   </style>
   <script src="https://js.arcgis.com/3.16/"></script>
@@ -67,12 +54,6 @@
   Stream Layer: Message Event
 </div>
 <div id="mapDiv"></div>
-<div>
-  <span>Stream service url: </span><input type="text" id="txtWsUrl" class="disconnected" /><br>
-      <span>
-        <input type="button" id="cmdToggleStream" value="Start Stream" />
-      </span>
-</div>
 <div class="padded" id="divFilterControls" style="position: relative;">
   <div class="control bordered">
     <span>Less than 18000 feet: </span>
@@ -108,9 +89,6 @@
         ltCnt = 0,
         intervalTimer;
 
-    dom.byId("txtWsUrl").value = url;
-    on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
-
     updateCounts();
 
     map = new Map("mapDiv", {
@@ -119,34 +97,15 @@
       zoom: 3
     });
 
-    function toggleStreamLayer(){
-      if (streamLayer){
-        disconnectStreamLayer();
-      }
-      else{
-        connectStreamLayer();
-      }
-    }
+    connectStreamLayer();
 
     function connectStreamLayer(){
-      var url = dom.byId("txtWsUrl").value;
-
       streamLayer = new StreamLayer(url, {
         purgeOptions: { displayCount: 10000 },
         outFields: ["*"],
         infoTemplate: new InfoTemplate("Attributes", "${*}")
       });
       map.addLayer(streamLayer);
-
-      streamLayer.on("connect", function(){
-        dom.byId("cmdToggleStream").value = "Stop Stream";
-        domClass.replace("txtWsUrl", "connected", "disconnected");
-      });
-
-      streamLayer.on("disconnect", function(){
-        dom.byId("cmdToggleStream").value = "Start Stream";
-        domClass.replace("txtWsUrl", "disconnected", "connected");
-      });
 
       streamLayer.on("error", function(err){
         console.log("error: ", err);
@@ -172,17 +131,6 @@
       });
 
       intervalTimer = setInterval(updateCounts, 1000);
-    }
-
-    function disconnectStreamLayer(){
-      if (streamLayer){
-        map.removeLayer(streamLayer);
-        streamLayer = null;
-        clearInterval(intervalTimer);
-        gtCnt = 0;
-        ltCnt = 0;
-        updateCounts();
-      }
     }
 
     function updateCounts(){

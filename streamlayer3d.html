@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
     <title>Stream Layer 4-3D</title>
-    <link rel="stylesheet" href="https://jsdev.arcgis.com/4.0/esri/css/main.css"/>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.0beta3/esri/css/main.css"/>
     <style type="text/css">
       html, body {
         height: 100%; width: 100%;
@@ -29,7 +29,7 @@
       }
 
       #mapDiv{
-        height: 85%;
+        height: 80%;
         width: 100%;
       }
 
@@ -68,7 +68,7 @@
         var slayer,
             controller;
 
-        dom.byId("txtUrl").value = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/WorldSatellites/StreamServer";
+        dom.byId("txtUrl").value = "http://ec2-75-101-155-202.compute-1.amazonaws.com:6080/arcgis/rest/services/WorldSatellites/StreamServer";
 
         var map = new Map({
           basemap: "satellite"
