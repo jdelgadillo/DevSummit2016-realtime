@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+  <title>StreamLayer-Filtering</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+  <style type="text/css">
+    html, body {
+      height: 100%; width: 100%;
+      margin: 0; padding: 0;
+      overflow: hidden;
+    }
+    .banner {
+      margin-top: 5px;
+      margin-bottom: 5px;
+      color: #000080;
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .bordered{
+      border-color: #dcdcdc;
+      border-style: solid;
+      border-width: thin;
+      padding: 10px;
+    }
+
+    .connected {
+      background-color: #008000;
+    }
+
+    .control{
+      float: left;
+      width: 25%;
+      height:75px;
+      text-align: center;
+      text-wrap: normal;
+    }
+
+    .disconnected {
+      background-color: #800010;
+    }
+
+    .padded {
+      margin-left: 10px;
+      padding-top: 10px;
+    }
+
+    #mapDiv {
+      width: 100%;
+      height: 65%;
+    }
+
+    #txtWhere {
+      width: 300px;
+    }
+
+    #txtWsUrl {
+      width: 700px;
+      color: #ffffff;
+    }
+  </style>
+  <script src="https://js.arcgis.com/3.16/"></script>
+</head>
+<body>
+  <div class="banner">
+    Stream Layer: Filtering
+  </div>
+  <div id="mapDiv"></div>
+  <div class="padded">
+    <input type="text" id="txtWsUrl" class="disconnected" /><br>
+    <input type="button" id="cmdToggleStream" value="Make Stream Layer" />
+  </div>
+  <div class="padded" id="divFilterControls" style="position: relative;">
+    <div class="control bordered">
+      <span>Draw extent to filter messages by a bounding box</span><br>
+      <input type="button" id="cmdToggleSpatialFilter" value="Draw Extent" disabled="disabled" /><br>
+    </div>
+    <div class="control bordered">
+      <span>Enter Where Clause</span><br>
+      <input type="text" id="txtWhere" value="AltitudeFeet < 30000">
+      <input type="button" id="cmdToggleWhereFilter" value="Apply Where" disabled="disabled" /><br>
+    </div>
+  </div>
+
+</body>
+
+<script>
+  require([
+    "esri/map",
+    "esri/layers/StreamLayer",
+
+    "esri/toolbars/draw",
+
+    "esri/InfoTemplate",
+
+    "esri/graphic",
+
+    "esri/symbols/SimpleFillSymbol",
+    "esri/symbols/SimpleLineSymbol",
+
+    "dojo/_base/Color",
+    "dojo/on",
+    "dojo/dom",
+    "dojo/dom-class",
+    "dojo/domReady!"
+  ], function(Map, StreamLayer,
+              Draw,
+              InfoTemplate,
+              Graphic,
+              SimpleFillSymbol, SimpleLineSymbol,
+              Color, on, dom, domClass) {
+
+    var streamLayer;
+
+    var url = "http://ec2-75-101-155-202.compute-1.amazonaws.com:6080/arcgis/rest/services/AsdiTracks/StreamServer";
+
+    var map = new Map("mapDiv", {
+      basemap: "gray",
+      center: [-90, 40],
+      zoom: 3
+    });
+
+    var drawTools = new Draw(map);
+
+    dom.byId("txtWsUrl").value = url;
+
+    //connect click events to UI buttons
+    on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
+    on(dom.byId("cmdToggleSpatialFilter"), "click", toggleSpatialFilter);
+    on(dom.byId("cmdToggleWhereFilter"), "click", toggleWhereFilter);
+
+    on(drawTools, "draw-end", function(evt){
+      drawTools.deactivate();
+      setSpatialFilter(evt.geometry);
+    });
+
+    /**********************************************************************************************
+     *
+     * Functions to add and remove Stream Layer
+     *
+     **********************************************************************************************/
+    function toggleStreamLayer(){
+      if(streamLayer){
+        removeStreamLayer();
+      }
+      else{
+        addStreamLayer();
+      }
+    }
+    function addStreamLayer(){
+      //url to stream service
+      var svcUrl = dom.byId("txtWsUrl").value;
+
+      //construct Stream Layer
+      streamLayer = new StreamLayer(svcUrl, {
+        purgeOptions: {
+          displayCount: 10000
+        },
+        infoTemplate: new InfoTemplate("Attributes", "${*}")
+      });
+
+      streamLayer.on("connect", processConnect);
+      streamLayer.on("disconnect", processDisconnect);
+
+      streamLayer.on("filter-change", processFilterChange);
+
+      streamLayer.on("error", function(err){
+        console.log("error: ", err);
+      });
+
+      map.addLayer(streamLayer);
+    }
+
+    function removeStreamLayer(){
+      if (streamLayer){
+        map.removeLayer(streamLayer);
+        streamLayer = null;
+        map.graphics.clear();
+      }
+    }
+
+    /*********************************************************
+     *
+     * Stream layer event handlers
+     *
+     *********************************************************/
+    function processConnect(){
+      dom.byId("cmdToggleStream").value = "Remove Stream Layer";
+      domClass.replace("txtWsUrl", "connected", "disconnected");
+      dom.byId("cmdToggleSpatialFilter").value = "Draw Extent";
+      dom.byId("cmdToggleSpatialFilter").disabled = false;
+      dom.byId("cmdToggleWhereFilter").value = "Apply Where";
+      dom.byId("cmdToggleWhereFilter").disabled = false;
+    }
+
+    function processDisconnect(){
+      dom.byId("cmdToggleStream").value = "Add Stream Layer";
+      domClass.replace("txtWsUrl", "disconnected", "connected");
+      dom.byId("cmdToggleSpatialFilter").disabled = true;
+      dom.byId("cmdToggleWhereFilter").disabled = true;
+    }
+
+    function processFilterChange(evt){
+      if(evt.error){
+        console.log("Could not set filter: ", evt.error);
+        return;
+      }
+      //clear layer graphics
+      streamLayer.clear();
+
+      //the event contains a filter property that is the current filter set on the service
+      //update map graphic to show current spatial filter
+      var filter = evt.filter || {};
+      var bbox = filter.geometry;
+
+      map.graphics.clear();
+      if(bbox){
+        map.graphics.add(new Graphic(bbox,
+            new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL,
+                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                    new Color( [5, 112, 176] ), 2),
+                new Color( [5, 112, 176, 0] ))));
+      }
+      dom.byId("cmdToggleSpatialFilter").value = bbox ?
+          "Clear Spatial Filter" :
+          "Draw Extent";
+
+      dom.byId("cmdToggleWhereFilter").value = filter.where ?
+          "Clear Where" :
+          "Apply Where";
+    }
+
+    /**********************************************************************************************
+     *
+     * Functions to set and clear spatial filter
+     *
+     **********************************************************************************************/
+    function toggleSpatialFilter(){
+      if(!streamLayer){
+        return;
+      }
+
+      var currentSpatialFilter = streamLayer.getGeometryDefinition();
+      if (!currentSpatialFilter){
+        drawTools.activate(Draw.EXTENT);
+      }
+      else{
+        setSpatialFilter(null);
+        dom.byId("cmdToggleSpatialFilter").value = "Draw Extent";
+      }
+    }
+
+    //Set spatial filter on stream layer. Setting to null clears filter
+    function setSpatialFilter(bbox){
+      if (streamLayer){
+        streamLayer.setGeometryDefinition(bbox);
+      }
+    }
+
+    function toggleWhereFilter(){
+      if(!streamLayer){
+        return;
+      }
+
+      var currentWhereFilter = streamLayer.getDefinitionExpression();
+
+      if (!currentWhereFilter){
+        var where = dom.byId("txtWhere").value;
+        if(!where){
+          return;
+        }
+        streamLayer.setDefinitionExpression(where);
+      }
+      else{
+        streamLayer.setDefinitionExpression(null);
+      }
+    }
+  });
+</script>
+</html>
