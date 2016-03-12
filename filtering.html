@@ -7,63 +7,6 @@
   <link rel="stylesheet" href="http://js.arcgis.com/3.16/esri/css/esri.css">
   <link rel="shortcut icon" href="./assets/img/favicon.ico">
   <link rel="stylesheet" href="./assets/css/all.css">
-
-  <!--<style type="text/css">
-    html, body {
-      height: 100%; width: 100%;
-      margin: 0; padding: 0;
-      overflow: hidden;
-    }
-    .banner {
-      margin-top: 5px;
-      margin-bottom: 5px;
-      color: #000080;
-      font-size: 2em;
-      font-weight: bold;
-    }
-
-    .bordered{
-      border-color: #dcdcdc;
-      border-style: solid;
-      border-width: thin;
-      padding: 10px;
-    }
-
-    .connected {
-      background-color: #008000;
-    }
-
-    .control{
-      float: left;
-      width: 25%;
-      height:75px;
-      text-align: center;
-      text-wrap: normal;
-    }
-
-    .disconnected {
-      background-color: #800010;
-    }
-
-    .padded {
-      margin-left: 10px;
-      padding-top: 10px;
-    }
-
-    #mapDiv {
-      width: 100%;
-      height: 65%;
-    }
-
-    #txtWhere {
-      width: 300px;
-    }
-
-    #txtWsUrl {
-      width: 700px;
-      color: #ffffff;
-    }
-  </style>-->
   <script src="https://js.arcgis.com/3.16/"></script>
 </head>
 <body class="tundra">
@@ -111,12 +54,12 @@
       <main class="column-24">
         <div class="leader-1">
           <div class="column-5">
-            <div>Spatial Filter</div>
+            <div class="content-bold">Spatial Filter</div>
             <button class="btn-disabled" id="cmdToggleSpatialFilter" disabled="disabled">Draw Extent</button>
           </div>
           <div class="column-8">
-            <div>Attribute Filter</div>
-            <textarea id="txtWhere" class="column-5" rows="1" placeholder="enter where clause"></textarea>
+            <div class="content-bold">Attribute Filter</div>
+            <input type="text" id="txtWhere" class="column-5" rows="1" placeholder="enter where clause"/>
             <button id="cmdToggleWhereFilter" class="btn-disabled right" disabled="disabled">Apply Where</button>
           </div>
           <div class="column-11 leader-1">
@@ -171,7 +114,7 @@
     var drawTools = new Draw(map);
 
     dom.byId("urlLink").href = url;
-    dom.byId("txtWhere").innerHTML = "AltitudeFeet < 30000";
+    dom.byId("txtWhere").value = "AltitudeFeet < 30000";
 
     //connect click events to UI buttons
     on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
@@ -315,7 +258,8 @@
       var currentWhereFilter = streamLayer.getDefinitionExpression();
 
       if (!currentWhereFilter){
-        var where = dom.byId("txtWhere").innerHTML;
+        var where = dom.byId("txtWhere").value;
+        console.log("where: ", where);
         if(!where){
           return;
         }
