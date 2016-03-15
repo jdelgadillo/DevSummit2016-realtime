@@ -203,10 +203,13 @@
     }
 
     function processFilterChange(evt){
+      console.log("filter-change: ", evt);
+
       if(evt.error){
         console.log("Could not set filter: ", evt.error);
         return;
       }
+
       //clear layer graphics
       streamLayer.clear();
 
