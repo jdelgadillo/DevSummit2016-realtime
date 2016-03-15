@@ -194,6 +194,8 @@
     }
 
     function processFilterChange(evt){
+      console.log("filter-change: ", evt);
+
       if(evt.error){
         console.log("Could not set filter: ", evt.error);
         return;
@@ -259,7 +261,6 @@
 
       if (!currentWhereFilter){
         var where = dom.byId("txtWhere").value;
-        console.log("where: ", where);
         if(!where){
           return;
         }
