@@ -80,7 +80,8 @@
     var connection,
         msgcount = 0;
 
-    var url = "ws://EC2-75-101-155-202.COMPUTE-1.AMAZONAWS.COM:6180/arcgis/ws/services/AsdiTracks/StreamServer/subscribe";
+    //var url = "ws://EC2-75-101-155-202.COMPUTE-1.AMAZONAWS.COM:6180/arcgis/ws/services/AsdiTracks/StreamServer/subscribe";
+    var url = "wss://geoeventsample3.esri.com:8443/arcgis/ws/services/SeattleBus/StreamServer";
     document.getElementById("txtSocketHost").innerHTML = url;
 
     document.getElementById("cmdConnect").addEventListener("click", connectSocket);
