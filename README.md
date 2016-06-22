@@ -1,4 +1,4 @@
-# DevSummit2016-realtime
+# UC2016-StreamServices
 Sample stream layer applications shown at the 2016 Esri Developer Summit
 
 ## Description
