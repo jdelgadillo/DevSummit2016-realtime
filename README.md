@@ -13,7 +13,7 @@ The samples:
 * *streamlayer3d.html* - A Stream Layer rendered in 3D in a Scene View. Uses the 4.0 JavaScript API.
 
 ## View samples
-The samples can be viewed [here] (https://jdelgadillo.github.io/UC2016-StreamServices/). The sample applications in the main branch do not use the styling that the live demos use. The samples in the main branch are meant to show example code, not to look pretty.
+The samples can be viewed [here] (http://jdelgadillo.github.io/UC2016-StreamServices/). The sample applications in the main branch do not use the styling that the live demos use. The samples in the main branch are meant to show example code, not to look pretty.
 
 ## Links
 * [3.x Stream Layer Documentation] (https://developers.arcgis.com/javascript/jsapi/streamlayer-amd.html)
