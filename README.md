@@ -1,5 +1,5 @@
 # UC2016-StreamServices
-Sample stream layer applications shown at the 2016 Esri Developer Summit
+Sample stream layer applications shown at the 2016 Esri User Conference
 
 ## Description
 This is a set of applications that demonstrate different use cases for using the Esri JavaScript API's Stream Layer.
