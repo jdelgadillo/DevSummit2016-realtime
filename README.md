@@ -1,4 +1,4 @@
-# UC2016-StreamServices
+# Real-Time Webapps
 Sample stream layer applications shown at the 2016 Esri User Conference
 
 ## Description
@@ -9,11 +9,11 @@ The samples:
 * *streamlayer.html* - Simple map and stream layer.
 * *temporal-renderers.html* - A Stream Layer with a temporal renderer. The temporal renderer is used to symbolize moving observations and their tracks.
 * *filtering.html* - Demonstrates how to set a spatial and/or attribute filter on a Stream Service from the Stream Layer
-* *gauges.html* - Demonstrates the `relatedFeatures` capability of the Stream Layer to show stream gauges with changing attributes. The stream gauge features come from a map service, and the stream service messages contain attributes only.
+* *gauges.html* - Demonstrates the `relatedFeatures` capability of the Stream Layer to show stream gauges with changing attributes. The stream gauge features come from a map service, and the stream service messages contain attributes only. Disabled as the gauges stream service is not currently available
 * *streamlayer3d.html* - A Stream Layer rendered in 3D in a Scene View. Uses the 4.0 JavaScript API.
 
 ## View samples
-The samples can be viewed [here] (http://jdelgadillo.github.io/UC2016-StreamServices/). The sample applications in the main branch do not use the styling that the live demos use. The samples in the main branch are meant to show example code, not to look pretty.
+The samples can be viewed [here] (https://jdelgadillo.github.io/RealTimeWebapps/). The sample applications in the main branch do not use the styling that the live demos use. The samples in the main branch are meant to show example code, not to look pretty.
 
 ## Links
 * [3.x Stream Layer Documentation] (https://developers.arcgis.com/javascript/jsapi/streamlayer-amd.html)
