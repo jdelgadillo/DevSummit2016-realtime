@@ -40,8 +40,8 @@
       <a class="skip-to-content" href="#skip-to-content">Skip To Content</a>
       <div class="grid-container">
         <div class="column-24">
-          <a href="./index.html" class="top-nav-title tablet-hide">Esri User Conference 2016</a>
-          <a href="/" class="icon-ui-menu top-nav-title js-drawer-toggle tablet-show" data-drawer="top-nav">Esri User Conference 2016</a>
+          <a href="./index.html" class="top-nav-title tablet-hide">Real-Time Webapps</a>
+          <a href="/" class="icon-ui-menu top-nav-title js-drawer-toggle tablet-show" data-drawer="top-nav">Real-Time Webapps</a>
         </div>
       </div>
     </header>
@@ -55,13 +55,13 @@
         <div class="leader-1">
           <div class="column-7">
             <span class="content-bold text-darker-gray">
-              Flights at Less Than 18000 Feet:
+              BusNo less than 3500:
             </span>
             <span id="lt18000" class="content-bold">0</span>
           </div>
           <div class="column-7">
             <span class="content-bold text-darker-gray">
-              Flights at Greater Than 18000 Feet:
+              BusNo greather than 3500:
             </span>
             <span id="gt18000" class="content-bold">0</span>
           </div>
@@ -92,7 +92,7 @@
       Map, StreamLayer, InfoTemplate,
       dom, domClass, on){
 
-    var url = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/AsdiTracks/StreamServer";
+    var url = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/SeattleBus/StreamServer";
     dom.byId("urlLink").href = url;
 
     on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
@@ -108,8 +108,8 @@
 
     map = new Map("mapDiv", {
       basemap: "topo",
-      center: [-90, 40],
-      zoom: 3
+      center: [-122.2446, 47.5997655],
+      zoom: 10 
     });
 
     //connectStreamLayer();
@@ -162,17 +162,9 @@
     }
 
     function processMessage(evt){
-      var id = evt.attributes.FltId,
-          alt = evt.attributes.AltitudeFeet,
-          oldalt = flights.hasOwnProperty(id) ? flights[id] : -1;
-      if(oldalt < 0) {
-        flights[id] = alt;
-      }
-      else {
-        oldalt < 18000 ? ltCnt-- : gtCnt--;
-      }
-
-      if (alt > 18000) {
+      var alt = evt.attributes.BusNo;
+          
+      if (alt > 3500) {
         gtCnt++;
       }
       else{
