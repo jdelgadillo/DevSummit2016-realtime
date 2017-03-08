@@ -40,8 +40,8 @@
       <a class="skip-to-content" href="#skip-to-content">Skip To Content</a>
       <div class="grid-container">
         <div class="column-24">
-          <a href="./index.html" class="top-nav-title tablet-hide">Esri User Conference 2016</a>
-          <a href="/" class="icon-ui-menu top-nav-title js-drawer-toggle tablet-show" data-drawer="top-nav">Esri User Conference 2016</a>
+          <a href="./index.html" class="top-nav-title tablet-hide">Real-Time Webapps</a>
+          <a href="/" class="icon-ui-menu top-nav-title js-drawer-toggle tablet-show" data-drawer="top-nav">Real-Time Webapps</a>
         </div>
       </div>
     </header>
@@ -88,7 +88,8 @@
 
     "esri/symbols/SimpleFillSymbol",
     "esri/symbols/SimpleLineSymbol",
-
+    "esri/geometry/Extent",
+    "esri/SpatialReference",
     "dojo/_base/Color",
     "dojo/on",
     "dojo/dom",
@@ -98,23 +99,23 @@
               Draw,
               InfoTemplate,
               Graphic,
-              SimpleFillSymbol, SimpleLineSymbol,
+              SimpleFillSymbol, SimpleLineSymbol, Extent, SpatialReference,
               Color, on, dom, domClass) {
 
     var streamLayer;
 
-    var url = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/AsdiTracks/StreamServer";
+    var url = "https://geoeventsample3.esri.com:6443/arcgis/rest/services/SeattleBus/StreamServer";
 
     var map = new Map("mapDiv", {
       basemap: "gray",
-      center: [-90, 40],
-      zoom: 3
+      center: [-122.2446, 47.5997655],
+      zoom:10 
     });
 
     var drawTools = new Draw(map);
 
     dom.byId("urlLink").href = url;
-    dom.byId("txtWhere").value = "AltitudeFeet < 30000";
+    dom.byId("txtWhere").value = "Latitude < 47.60";
 
     //connect click events to UI buttons
     on(dom.byId("cmdToggleStream"), "click", toggleStreamLayer);
